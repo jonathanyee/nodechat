@@ -1,0 +1,17 @@
+{
+  "name": "chat",
+  "version": "0.0.1",
+  "author": "jonathan",
+  "description": "simple chat app",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "socket.io": "0.9.13"
+  },
+  "engines": {
+    "node": ">=0.6"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {}
+}

@@ -1,0 +1,66 @@
+<html>
+<head>
+  <title>Chat</title>
+
+  <style type="text/css">
+    #chats {
+      margin: 0 auto;
+      overflow: auto;
+      padding: 0;
+      width: 1000px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      padding: 5px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    #sender {
+      position: absolute;
+      bottom: 0;
+    }
+  </style>
+
+  <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+    $(document).ready(function(){
+      var socket = io.connect('http://localhost');
+      var chats = $("#chats ul");
+
+      socket.on('displayChat', function (data) {
+        // console.log("displayChat", data);
+        chats.append($("<li></li>").text(data));
+      });
+
+      var author = $("#author");
+      var message = $("#message");
+
+      message.keypress(function(event) {
+        if ((event.keyCode || event.which) == 13 && author.val() != '') {
+          // console.log("sendchat", author.val() + ": " + message.val());
+          socket.emit('sendChat', author.val() + ": " + message.val());
+          message.val('');
+        }
+      });
+    });
+  </script>
+</head>
+<body>
+
+  <div id="chats">
+    <ul></ul>
+  </div>
+
+  <div id="sender">
+    <input id="author" type="text"><input id="message" type="text">
+  </div>
+
+</body>
+</html>

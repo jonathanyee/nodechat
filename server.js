@@ -1,27 +1,32 @@
-var app = require('http').createServer(handler),
-     io = require('socket.io').listen(app),
-     fs = require('fs');
+var express = require('express'),
+        app = express(),
+     server = require('http').createServer(app),
+         io = require('socket.io').listen(server);
 
-app.listen(4000);
+server.listen(4000);
 io.set('log level', 2);
 console.log('Server running on http://localhost:4000');
 
-function handler (req, res) {
-  fs.readFile(__dirname + '/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
+app.configure(function() {
+  app.use(express.static(__dirname + '/public'));
+    app.use(app.router);
+});
 
-    res.writeHead(200);
-    res.end(data);
-  });
-}
+app.get('/', function (req, res) {
+  res.sendfile(__dirname + '/index.html');
+});
+
+var usernames = {};
 
 io.sockets.on('connection', function (socket) {
+  socket.on('addUser', function(username) {
+    socket.username = username;
+    usernames[username] = username;
+    socket.emit('displayChat', 'SERVER', 'you have connected.');
+    socket.broadcast.emit('displayChat', 'SERVER', username + ' has connected to this room.');
+  });
+
   socket.on('sendChat', function (data) {
-    // console.log('sendChat', data);
-    io.sockets.emit('displayChat', data);
+    io.sockets.emit('displayChat', socket.username, data);
   });
 });

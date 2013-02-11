@@ -25,27 +25,45 @@
       bottom: 0;
     }
   </style>
+  <link href="/js/apprise-v2.min.css" rel="stylesheet" type="text/css">
 
   <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
   <script src="/socket.io/socket.io.js"></script>
+  <script src="/js/apprise-v2.min.js"></script>
 
   <script>
     $(document).ready(function(){
       var socket = io.connect('http://localhost');
       var chats = $("#chats ul");
 
-      socket.on('displayChat', function (data) {
-        // console.log("displayChat", data);
-        chats.append($("<li></li>").text(data));
+      var options = {
+        buttons: {
+          confirm: {
+            text: 'Okay',
+            className: 'blue',
+            action: function(e) {
+              socket.emit('addUser', e.input);
+              console.log(e);
+              Apprise('close');
+            }
+          },
+        },
+        input: true,
+      };
+
+      socket.on('connect', function() {
+        Apprise("What's your name?", options);
       });
 
-      var author = $("#author");
+      socket.on('displayChat', function (username, data) {
+        chats.append($("<li></li>").text(username + " : " + data));
+      });
+
       var message = $("#message");
 
       message.keypress(function(event) {
-        if ((event.keyCode || event.which) == 13 && author.val() != '') {
-          // console.log("sendchat", author.val() + ": " + message.val());
-          socket.emit('sendChat', author.val() + ": " + message.val());
+        if ((event.keyCode || event.which) == 13) {
+          socket.emit('sendChat', message.val());
           message.val('');
         }
       });
@@ -59,7 +77,7 @@
   </div>
 
   <div id="sender">
-    <input id="author" type="text"><input id="message" type="text">
+    <input id="message" type="text">
   </div>
 
 </body>

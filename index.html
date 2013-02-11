@@ -3,16 +3,23 @@
   <title>Chat</title>
 
   <style type="text/css">
+
+    html, body {
+      height: 100%;
+    }
+
     #chats {
+      min-height: 100%;
       margin: 0 auto;
-      overflow: auto;
       padding: 0;
+      position: relative;
       width: 1000px;
     }
 
     ul {
       list-style: none;
-      padding: 0;
+      padding: 0 0 50px 0;
+      overflow: auto;
     }
 
     li {
@@ -21,8 +28,13 @@
     }
 
     #sender {
-      position: absolute;
-      bottom: 0;
+      height: 25px;
+      width: 1000px;
+      margin-top: -50px;
+    }
+
+    #message {
+      width: 100%;
     }
   </style>
   <link href="/js/apprise-v2.min.css" rel="stylesheet" type="text/css">
@@ -33,8 +45,11 @@
 
   <script>
     $(document).ready(function(){
-      var socket = io.connect('http://localhost');
+      // var socket = io.connect('http://chattybox.jit.su/');
+      var socket = io.connect('http://localhost/');
+      var body = $("html,body");
       var chats = $("#chats ul");
+      var message = $("#message");
 
       var options = {
         buttons: {
@@ -43,8 +58,8 @@
             className: 'blue',
             action: function(e) {
               socket.emit('addUser', e.input);
-              console.log(e);
               Apprise('close');
+              message.focus();
             }
           },
         },
@@ -57,12 +72,11 @@
 
       socket.on('displayChat', function (username, data) {
         chats.append($("<li></li>").text(username + " : " + data));
+        body.animate({scrollTop: chats.find('li:last').offset().top});
       });
 
-      var message = $("#message");
-
       message.keypress(function(event) {
-        if ((event.keyCode || event.which) == 13) {
+        if ((event.keyCode || event.which) == 13 && message.val() != '') {
           socket.emit('sendChat', message.val());
           message.val('');
         }
